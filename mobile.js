@@ -4,10 +4,8 @@ class Paper {
     holdingPaper = false;
     touchStartX = 0;
     touchStartY = 0;
-    touchMoveX = 0;
-    touchMoveY = 0;
-    touchEndX = 0;
-    touchEndY = 0;
+    touchX = 0;
+    touchY = 0;
     prevTouchX = 0;
     prevTouchY = 0;
     velX = 0;
@@ -18,66 +16,105 @@ class Paper {
     rotating = false;
 
     init(paper) {
-        paper.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if(!this.rotating) {
-                this.touchMoveX = e.touches[0].clientX;
-                this.touchMoveY = e.touches[0].clientY;
+        // Helper to calculate touch or mouse position
+        const getPos = (e) => {
+            const isTouch = e.touches && e.touches.length > 0;
+            return isTouch ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+        };
 
-                this.velX = this.touchMoveX - this.prevTouchX;
-                this.velY = this.touchMoveY - this.prevTouchY;
+        // Handle mouse/touch movement
+        const onMove = (e) => {
+            const { x, y } = getPos(e);
+
+            if (!this.rotating) {
+                this.touchX = x;
+                this.touchY = y;
+
+                this.velX = this.touchX - this.prevTouchX;
+                this.velY = this.touchY - this.prevTouchY;
             }
 
-            const dirX = e.touches[0].clientX - this.touchStartX;
-            const dirY = e.touches[0].clientY - this.touchStartY;
-            const dirLength = Math.sqrt(dirX*dirX+dirY*dirY);
+            const dirX = x - this.touchStartX;
+            const dirY = y - this.touchStartY;
+            const dirLength = Math.sqrt(dirX * dirX + dirY * dirY);
             const dirNormalizedX = dirX / dirLength;
             const dirNormalizedY = dirY / dirLength;
 
             const angle = Math.atan2(dirNormalizedY, dirNormalizedX);
             let degrees = 180 * angle / Math.PI;
             degrees = (360 + Math.round(degrees)) % 360;
-            if(this.rotating) {
+
+            if (this.rotating) {
                 this.rotation = degrees;
             }
 
-            if(this.holdingPaper) {
-                if(!this.rotating) {
+            if (this.holdingPaper) {
+                if (!this.rotating) {
                     this.currentPaperX += this.velX;
                     this.currentPaperY += this.velY;
                 }
-                this.prevTouchX = this.touchMoveX;
-                this.prevTouchY = this.touchMoveY;
+                this.prevTouchX = this.touchX;
+                this.prevTouchY = this.touchY;
 
                 paper.style.transform = `translateX(${this.currentPaperX}px) translateY(${this.currentPaperY}px) rotateZ(${this.rotation}deg)`;
             }
-        })
+        };
 
-        paper.addEventListener('touchstart', (e) => {
-            if(this.holdingPaper) return;
+        // Attach move listeners for both mouse and touch
+        paper.addEventListener('mousemove', onMove);
+        paper.addEventListener('touchmove', onMove);
+
+        // Handle start of dragging or rotation for both mouse and touch
+        paper.addEventListener('mousedown', (e) => {
+            if (this.holdingPaper) return;
+
             this.holdingPaper = true;
-
             paper.style.zIndex = highestZ;
             highestZ += 1;
 
-            this.touchStartX = e.touches[0].clientX;
-            this.touchStartY = e.touches[0].clientY;
+            const { x, y } = getPos(e);
+            this.touchStartX = x;
+            this.touchStartY = y;
             this.prevTouchX = this.touchStartX;
             this.prevTouchY = this.touchStartY;
-        });
-        paper.addEventListener('touchend', () => {
-            this.holdingPaper = false;
-            this.rotating = false;
+
+            if (e.button === 2 || (e.touches && e.touches.length === 2)) {
+                this.rotating = true;
+            }
         });
 
-        // For two-finger rotation on touch screens
-        paper.addEventListener('gesturestart', (e) => {
-            e.preventDefault();
-            this.rotating = true;
+        // Handle touchstart (for mobile)
+        paper.addEventListener('touchstart', (e) => {
+            if (this.holdingPaper) return;
+
+            this.holdingPaper = true;
+            paper.style.zIndex = highestZ;
+            highestZ += 1;
+
+            const { x, y } = getPos(e);
+            this.touchStartX = x;
+            this.touchStartY = y;
+            this.prevTouchX = this.touchStartX;
+            this.prevTouchY = this.touchStartY;
+
+            // For rotating on two-finger touch
+            if (e.touches && e.touches.length === 2) {
+                this.rotating = true;
+            }
         });
-        paper.addEventListener('gestureend', () => {
+
+        // Handle touchend or mouseup (to stop dragging or rotation)
+        const stopDragging = () => {
+            this.holdingPaper = false;
             this.rotating = false;
-        });
+        };
+
+        window.addEventListener('mouseup', stopDragging);
+        window.addEventListener('touchend', stopDragging);
+
+        // Prevent default behavior for right-click or long touch
+        paper.addEventListener('contextmenu', (e) => e.preventDefault());
+        paper.addEventListener('touchstart', (e) => e.preventDefault()); // Disable default touch behavior like scrolling
     }
 }
 
