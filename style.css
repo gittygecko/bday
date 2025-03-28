@@ -71,3 +71,33 @@ p {
 
 // filter: drop-shadow(2px 1.5px 1px rgba(0,0,105,0.9));
 }
+/* Fireworks Styles */
+.fireworks {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    display: none;
+}
+
+.particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    opacity: 0;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+    animation: explosion 2s ease-out forwards;
+}
+
+@keyframes explosion {
+    0% {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--x), var(--y));
+        opacity: 0;
+    }
+}
