@@ -100,6 +100,20 @@
         // Trigger the fireworks
         createFireworks();
     }
+        // Handle both click and touch events to trigger the celebration
+    function handleCelebrateEvent(e) {
+        // Prevents the default action (like right-click or long-press on mobile)
+        e.preventDefault();
+
+        celebrate();
+    }
+
+    // Add event listeners for both mouse and touch
+    const celebrateButton = document.getElementById('celebrateButton');
+
+    // Trigger the celebration on mouse click or touch
+    celebrateButton.addEventListener('click', handleCelebrateEvent);
+    celebrateButton.addEventListener('touchstart', handleCelebrateEvent);  // This helps with mobile devices
 </script>
 
 </body>
