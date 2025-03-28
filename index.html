@@ -8,7 +8,8 @@
 </head>
 <body>
 
-<div class="paper heart">
+<div class="paper heart" onclick="celebrate()">
+    Click Me ❤️>
 
 </div>
     
@@ -45,8 +46,59 @@
 <div class="paper">
     <p class="p1">Happy birthday sweetheart 😘😘 </p>
 </div>
-
+    
+<!-- Fireworks display -->
+<div class="fireworks"></div>
 <script  src="./script.js"></script>
+
+<script>
+    // Function to play the celebration sound
+    function playCelebrationSound() {
+        const audio = new Audio('Audio/bday.mp3');  // Replace with your MP3 link
+        audio.play();
+    }
+
+    // Function to trigger fireworks (particles)
+    function createFireworks() {
+        let fireworks = document.querySelector('.fireworks');
+        fireworks.style.display = 'block';
+        fireworks.innerHTML = '';
+
+        // Create 3 bursts of fireworks
+        for (let j = 0; j < 3; j++) {  // Create 3 firework bursts
+            setTimeout(() => {
+                for (let i = 0; i < 100; i++) {  // 100 particles per burst
+                    let particle = document.createElement('div');
+                    particle.classList.add('particle');
+
+                    // Random direction and distance for each particle
+                    let angle = Math.random() * 2 * Math.PI;
+                    let distance = Math.random() * 400 + 150;
+                    let x = Math.cos(angle) * distance;
+                    let y = Math.sin(angle) * distance;
+
+                    // Set the particle's properties
+                    particle.style.setProperty('--x', `${x}px`);
+                    particle.style.setProperty('--y', `${y}px`);
+                    particle.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                    particle.style.width = `${Math.random() * 8 + 5}px`;
+                    particle.style.height = particle.style.width;
+
+                    fireworks.appendChild(particle);
+                }
+            }, j * 500);  // Delay between each burst
+        }
+    }
+
+    // Function to trigger the birthday celebration (fireworks and sound)
+    function celebrate() {
+        // Play the celebration sound
+        playCelebrationSound();
+
+        // Trigger the fireworks
+        createFireworks();
+    }
+</script>
 
 </body>
 </html>
